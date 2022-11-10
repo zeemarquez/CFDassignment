@@ -1,0 +1,42 @@
+/.vscode
+~$results.xlsx
+groundeffect/case/constant/polyMesh/faces is 139.94 MB; this exceeds GitHub's file size limit of 100.00 MB        
+remote: error: File groundeffect/case/mesh.msh is 289.88 MB; this exceeds GitHub's file size limit of 100.00 MB        
+remote: error: File groundeffect/mesh_refine.msh is 183.19 MB; t
+
+/groundeffect/case/*
+
+!/groundeffect/case/0
+!/groundeffect/case/postProcessing
+!/groundeffect/case/system
+!/groundeffect/case/a.foam
+!/groundeffect/case/forces.csv
+!/groundeffect/case/forces.png
+!/groundeffect/case/residuals.csv
+!/groundeffect/case/residuals.png
+!/groundeffect/case/mesh.geo
+
+
+/freestream/grid2/case/*
+
+!/freestream/grid2/case/0
+!/freestream/grid2/case/postProcessing
+!/freestream/grid2/case/system
+!/freestream/grid2/case/a.foam
+!/freestream/grid2/case/forces.csv
+!/freestream/grid2/case/forces.png
+!/freestream/grid2/case/residuals.csv
+!/freestream/grid2/case/residuals.png
+!/freestream/grid2/case/mesh.geo
+
+/freestream/grid1/case/*
+
+!/freestream/grid1/case/0
+!/freestream/grid1/case/postProcessing
+!/freestream/grid1/case/system
+!/freestream/grid1/case/a.foam
+!/freestream/grid1/case/forces.csv
+!/freestream/grid1/case/forces.png
+!/freestream/grid1/case/residuals.csv
+!/freestream/grid1/case/residuals.png
+!/freestream/grid1/case/mesh.geo
