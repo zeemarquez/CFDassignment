@@ -1,0 +1,389 @@
+#!/usr/local/bin/python3
+
+import time
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import os
+import datetime
+import sys
+
+def getResidualName(line):
+    iStart = line.find('Solving for ') + len('Solving for ')
+    iEnd = line.find(', Initial residual')
+    return line[iStart:iEnd]
+
+def getResidualVal(line):
+    iStart = line.find('Final residual = ') + len('Final residual = ')
+    iEnd = line.find(', No Iterations')
+    return float(line[iStart:iEnd])
+
+def getResiduals(logpath):
+
+    log = open(logpath,'r')
+    text = log.read()
+    log.close()
+    lines = text.split('\n')
+
+    residuals = {}
+    time = []
+    regis = []
+    tarray = []
+    t = 0.0
+
+    for line in lines:
+        if 'Time = ' in line and not 'ClockTime' in line:
+            t = float(line.replace('Time = ',''))
+            regis = []
+            time.append(t)
+
+        if 'Solving for ' in line:
+            key, val = getResidualName(line), getResidualVal(line)
+            if not key in regis:
+                if not key in residuals.keys():
+                    residuals[key] = [val]
+                else:
+                    residuals[key].append(val)
+                regis.append(key)
+
+    return residuals, time
+
+def readlog():
+    f = open('/Users/zeemarquez/Documents/Python/OpenFOAM/Plotter/log.txt','r')
+    text = f.read()
+    f.close()
+    lines = text.split('\n')
+    xtab = []
+    ytab = []
+
+    for line in lines[:-1]:
+        xtab.append(float(line.split(';')[0]))
+        ytab.append(float(line.split(';')[1]))
+
+    return (xtab,ytab)
+
+def getEndTime(logpath):
+    controlDict = '/'.join(logpath.split('/')[:-1]) + '/system/controlDict'
+    f = open(controlDict,'r')
+    text = f.read()
+    f.close()
+    for line in text.split('\n'):
+        if line[:len('endTime')] == 'endTime':
+            endT = float(line.replace('endTime','').replace(';','').replace(' ',''))
+            break
+    return endT
+
+def estTimeLeft(endT, tarray):
+    global dtRealArray
+
+    treal = time.time()
+    dtRealArray.append(treal - dtRealArray[-1])
+    dtavg = sum(dtRealArray)/len(dtRealArray)
+
+    t1, t2 = tarray[-1], tarray[-2]
+    dtsim = t1 - t2
+
+    tleft = (dtavg/dtsim)*(endT-t1)
+
+    delta = datetime.timedelta(seconds = tleft)
+
+    return str(delta)
+
+def saveFig(logpath):
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    
+    resdic, tarray = getResiduals(logpath)
+        # Draw x and y lists
+    ax.clear()
+    for key in resdic.keys():
+        nSize = min([len(tarray),len(resdic[key])])
+
+        ax.plot(tarray[:nSize], resdic[key][:nSize], label=key)
+
+    # Format plot
+    ax.set_xlim(left=0)
+    plt.xticks(rotation=45, ha='right')
+    plt.subplots_adjust(bottom=0.30)
+    plt.title('Residuals')
+    plt.ylabel('')
+    plt.xlabel('')
+    plt.yscale('log')
+    plt.legend(loc='upper right')
+    fig.set_size_inches(10, 6)
+    fig.tight_layout()
+    plt.savefig(logpath.replace('log','residuals.png'))
+    plt.close()
+
+def saveFigForces(logpath):
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    
+    fdict = getForces(logpath)
+        
+    ax.clear()
+    for key in fdict.keys():
+        if key != 'Time':
+            ax.plot(fdict['Time'],fdict[key], label = key)
+    
+    plt.yscale('symlog')
+    plt.xscale('log')
+    plt.grid(which='both')
+    plt.title('Forces')
+    plt.legend(loc='upper right')
+    fig.set_size_inches(10, 6)
+    fig.tight_layout()
+    
+    plt.savefig(logpath.replace('log','forces.png'))
+    plt.close()
+    
+def exportCSV(logpath):
+    resdic, tarray = getResiduals(logpath)
+    text = 'T;' + ';'.join([key for key in resdic.keys()]) + '\n'
+    for i in range(len(tarray)):
+        try:
+            text+= str(float(tarray[i])) + ';' + ';'.join([str(resdic[key][i]) for key in resdic.keys()]) + '\n'
+        except:
+            pass
+        
+    f = open(logpath.replace('log','log.csv'),'w')
+    f.write(text)
+    f.close()
+    
+    print("Created residuals csv file: ",logpath.replace('log','log.csv') )
+    
+    forcesdic = getForces(logpath)
+    text = ';'.join([key for key in forcesdic.keys()]) + '\n'
+    for i in range(len(forcesdic['Time'])):
+        try:
+            text+= ';'.join([str(forcesdic[key][i]) for key in forcesdic.keys()]) + '\n'
+        except:
+            pass
+        
+    f = open(logpath.replace('log','forces.csv'),'w')
+    f.write(text)
+    f.close()
+    
+    print("Created forces csv file: ",logpath.replace('forces','forces.csv') )
+
+def getForces(logpath):
+    
+    forces = ['Time','Cl','Cd']
+    
+    forcespath = logpath.replace('log','/postProcessing/forces/0/coefficient_0.dat') 
+    f = open(forcespath,'r')
+    text = f.read()
+    f.close()
+    
+    forcesdict = {}
+    startdict = False
+    lines = text.split('\n')
+    for line in lines:
+        if startdict:
+            values = [float(x) for x in line.split()]
+            if len(values) == len(forcesdict.keys()):
+                for i, key in enumerate(forcesdict.keys()):
+                    forcesdict[key].append(values[i])
+                
+            
+        if 'Time' in line and not startdict:
+            headers = line.split()[1:]
+            startdict = True
+            for header in headers:
+                newH = header.replace('(','_').replace(')','')
+                forcesdict[newH] = []
+                
+    for key in forcesdict.copy().keys():
+        if not key in forces:
+            forcesdict.pop(key)
+            
+    return forcesdict.copy()
+    
+    
+
+# /Users/zeemarquez/openfoam/assignment/case/log
+
+path_valid = False
+logpath = None
+
+if input("Use default path? (y/n):") == "y":
+    cwd = os.getcwd()
+    print('Current directory:',cwd,'\n')
+    logpath = cwd + '/log'
+    if not os.path.exists(logpath):
+        print('log file could not be foundincurrent directory')
+    else:
+        path_valid = True
+
+
+while not path_valid:
+    logpath = input('\nLog path:')
+    if not os.path.exists(logpath):
+        print('Log path not valid | Please enter a valid path')
+        if input('Do you wish to exit? (y/n):') == "y":
+            break
+    else:
+        path_valid = True
+        break
+
+forces = False
+animate = True
+plotall = False
+
+    
+if path_valid and len(sys.argv) > 1:
+    if sys.argv[1] == 'save':
+        saveFig(logpath)
+        saveFigForces(logpath)
+        animate = False
+    elif sys.argv[1] == 'csv':
+        exportCSV(logpath)
+        animate = False
+    elif sys.argv[1] == 'forces':
+        animate = True
+        forces = True
+    elif sys.argv[1] == 'all':
+        animate = True
+        forces = False
+        plotall = True
+    else:
+        animate = False
+        
+if path_valid and animate:
+
+    tarray = []
+    resdic = []
+
+    tend = getEndTime(logpath)
+    dtRealArray = [0]
+    tsimArray = [0]
+    residLenArray = [0]
+    stopAnim = False
+    nSame = 0
+    
+    timeSaveResiduals = time.time()
+
+    # Create figure for plotting
+    fig = plt.figure()
+    
+    if not plotall:
+        ax = fig.add_subplot(1, 1, 1)
+    else:
+        ax1 = fig.add_subplot(2, 1, 1)
+        ax2 = fig.add_subplot(2, 1, 2)
+    
+    def animateall(i):
+        global timeSaveResiduals
+        # Read log
+        resdic, tarray = getResiduals(logpath)
+
+        # Draw x and y lists
+        ax1.clear()
+        nSize = len(tarray)
+        for key in resdic.keys():
+            nSize = min([len(tarray),len(resdic[key])])
+
+            ax1.plot(tarray[:nSize], resdic[key][:nSize], label=key)
+            
+        fdict = getForces(logpath)
+        
+        ax2.clear()
+        for key in fdict.keys():
+            if key != 'Time':
+                ax2.plot(fdict['Time'],fdict[key], label = key)
+        
+        ax1.set_xlim(left=0)
+        
+        ax1.set_yscale('log')
+        ax2.set_yscale('symlog')
+        ax2.set_xscale('log')
+        
+        ax1.set_title("Residuals")
+        ax2.set_title("Forces")
+        
+        ax1.legend(loc='upper right')
+        ax2.legend(loc='upper right')
+        
+        ax1.grid(which='both')
+        ax2.grid(which='both')
+        
+        fig.set_size_inches(10, 12)
+        fig.tight_layout()
+        
+        print(' | '.join([key + ':' + str(fdict[key][-1]) for key in fdict.keys()]),' | '.join([key + ':' + str(resdic[key][nSize-1]) for key in resdic.keys()]))
+        
+        
+        if (time.time() - timeSaveResiduals) > (10*60):
+            timeSaveResiduals = time.time()
+            exportCSV(logpath)
+            print("---- Residuals saved ----")
+            
+        
+    
+    def animateforces(i):
+        fdict = getForces(logpath)
+        
+        ax.clear()
+        for key in fdict.keys():
+            if key != 'Time':
+                ax.plot(fdict['Time'],fdict[key], label = key)
+        
+        plt.yscale('symlog')
+        plt.xscale('log')
+        plt.grid(which='both')
+        plt.title('Forces coefficients')
+        plt.legend(loc='upper right')
+        fig.set_size_inches(10, 6)
+        fig.tight_layout()
+        
+        print(' | '.join([key + ':' + str(fdict[key][-1]) for key in fdict.keys()]))
+            
+
+    # This function is called periodically from FuncAnimation
+    def animate(i):
+
+        global timeSaveResiduals
+        # Read log
+        resdic, tarray = getResiduals(logpath)
+
+        # Draw x and y lists
+        ax.clear()
+        nSize = len(tarray)
+        for key in resdic.keys():
+            nSize = min([len(tarray),len(resdic[key])])
+
+            ax.plot(tarray[:nSize], resdic[key][:nSize], label=key)
+
+        # Format plot
+        ax.set_xlim(left=0)
+        plt.xticks(rotation=45, ha='right')
+        plt.subplots_adjust(bottom=0.30)
+        plt.title('Residuals')
+        plt.ylabel('')
+        plt.xlabel('')
+        plt.yscale('log')
+        plt.legend(loc='upper right')
+        fig.set_size_inches(10, 6)
+        fig.tight_layout()
+        
+        print('T:',str(float(tarray[nSize-1])),' | ',' | '.join([key + ':' + str(resdic[key][nSize-1]) for key in resdic.keys()]))
+        
+        if (time.time() - timeSaveResiduals) > (10*60):
+            timeSaveResiduals = time.time()
+            exportCSV(logpath)
+            print("---- Residuals saved ----")
+
+
+    # Set up plot to call animate() function periodically
+    if forces:
+        ani = animation.FuncAnimation(fig, animateforces, interval=1000)
+        plt.show()
+    elif plotall:
+        ani = animation.FuncAnimation(fig, animateall, interval=1000)
+        plt.show()
+    else:
+        ani = animation.FuncAnimation(fig, animate, interval=1000)
+        plt.show()
+        
+    
+# %%

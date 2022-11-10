@@ -1,0 +1,69 @@
+#!/bin/bash
+
+
+if [ "$1" = "-help" ]
+then
+printf "\n\t [no args]: default, runs openfoam application without extras\n\t-mesh: Only converts .geo file to .msh and adjusts the boundaries \n\t -all: Runs meshing and application \n\t -parallel: Runs application only in parallel\n\n"
+else
+
+printf "Script executed from: ${PWD}"
+
+helper="/Users/zeemarquez/openfoam/assignment/helpers.py"
+casepath="${PWD}"
+printf "Case Path: ${casepath}"
+
+application=$(python3 ${helper} application ${casepath})
+
+if [ $application = "error" ] 
+then
+    echo "ERROR: Make sure the runof.sh file is executed in the correct case folder"
+else
+    if [ "$1" = "-mesh" ] 
+    then 
+        printf "\n\n------------- Running Mesh only -------------\n\n"
+        gmsh mesh.geo -format msh2 -3 -o mesh.msh
+        openfoam -c "gmshToFoam mesh.msh"
+        python3 ${helper} boundary ${casepath}
+        openfoam -c checkMesh
+    elif [ "$1" = "-meshrefin" ] 
+    then 
+        printf "\n\n------------- Running Mesh + Refinement only -------------\n\n"
+        gmsh mesh.geo -format msh2 -3 -o mesh.msh
+        openfoam -c "gmshToFoam mesh.msh"
+        python3 ${helper} boundary ${casepath}
+        openfoam -c checkMesh
+    elif [ "$1" = "-all" ]
+    then
+        printf "\n\n------------- Running Meshing + Application -------------\n\n"
+        gmsh mesh.geo -format msh2 -3 -o mesh.msh
+        openfoam -c "gmshToFoam mesh.msh"
+        python3 ${helper} boundary ${casepath}
+        openfoam -c checkMesh
+        printf "\nOpenFOAM Application:${application}\n"
+        rm 0/yPlus
+        openfoam -c "${application} > log"
+        openfoam -c "${application} -postProcess -latestTime -func yPlus"
+
+    elif [ "$1" = "-parallel" ]
+    then
+        printf "\n\n------------- Running Application in parallel -------------\n\n"
+
+        printf "\nOpenFOAM Application:${application}\n"
+        rm 0/yPlus
+        openfoam -c "decomposePar -force"
+        openfoam -c "mpirun -oversubscribe -np 4 ${application} -parallel > log"
+        openfoam -c reconstructPar
+        openfoam -c "${application} -postProcess -latestTime -func yPlus"
+    elif [ "$1" = "" ]
+    then
+        printf "\n\n------------- Running Application only -------------\n\n"
+
+        printf "\nOpenFOAM Application:${application}\n"
+        rm 0/yPlus
+        openfoam -c "${application} > log"
+        openfoam -c "${application} -postProcess -latestTime -func yPlus"
+    else
+    printf "\n\n Invalid argument: $1 \n\n"
+    fi
+fi
+fi

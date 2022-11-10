@@ -4,6 +4,8 @@ groundeffect/case/constant/polyMesh/faces is 139.94 MB; this exceeds GitHub's fi
 remote: error: File groundeffect/case/mesh.msh is 289.88 MB; this exceeds GitHub's file size limit of 100.00 MB        
 remote: error: File groundeffect/mesh_refine.msh is 183.19 MB; t
 
+/.DS_Store 
+
 /groundeffect/case/*
 
 !/groundeffect/case/0
