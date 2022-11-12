@@ -6,6 +6,7 @@ remote: error: File groundeffect/mesh_refine.msh is 183.19 MB; t
 
 .DS_Store
 
+/groundeffect/case_m
 /groundeffect/case/*
 
 !/groundeffect/case/0
