@@ -118,3 +118,31 @@ fig.set_size_inches(10, 6)
 fig.tight_layout()
 plt.show()
 # %%
+def sieve(n):
+    x = [1]*n
+    x[1] = 0
+    for i in range(2, int(n/2)):
+        j = 2*i
+        while j < n:
+            x[j] = 0
+            j = j + i
+    return x
+
+def prime(n,x):
+    i,j = 1,1
+    while j <= n:
+        if x[i] == 1:
+            j+=1
+        i+=1
+    return i - 1
+
+x = sieve(10000)
+code = [1206, 301, 384, 5]
+key = [1,1,2,2]
+
+p = ''
+for i in range(0,4):
+    p+=str(prime(code[i],x)- key[i])
+
+print(p)
+# %%

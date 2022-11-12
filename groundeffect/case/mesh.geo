@@ -451,11 +451,11 @@ Curve Loop(20) = {26, 46, -55, -56};
 Plane Surface(20) = {20};
 //+
 
-nHInlet = 50;
-nVLE = 18;
-nVAirfoil = 80;
+nHInlet = 282;
+nVLE = 112;
+nVAirfoil = 186;
 //+
-prHInlet = 1.055;
+prHInlet = 1.008;
 prVLEBottom = 1.01;
 
 
@@ -464,46 +464,37 @@ Transfinite Curve {16, 12, 23, 27} = nHInlet Using Progression 1/prHInlet;
 //+
 Transfinite Curve {22} = nHInlet Using Progression prHInlet;
 //+
-Transfinite Curve {17, 11} = 33 Using Progression 1.015;
+Transfinite Curve {17, 11} = 180 Using Progression 1;
 //+
-Transfinite Curve {57} = 33 Using Progression 1.041;
+Transfinite Curve {57} = 180 Using Progression 1.005;
 //+
-Transfinite Curve {58} = 120 Using Progression 1/1.009;
-Transfinite Curve {18, 13} = 120 Using Progression 1/1.006;
+Transfinite Curve {18, 13, 58} = 482 Using Progression 1;
 //+
-Transfinite Curve {24, 28} = 180 Using Bump 1;
+Transfinite Curve {24, 28} = 822 Using Progression 1;
 //+
-Transfinite Curve {59} = 180 Using Bump 1/2.8;
+Transfinite Curve {59} = 822 Using Bump 1/2;
 //+
-Transfinite Curve {9, 21, 10, 39, 40, 41} = nVAirfoil Using Progression 1.07;
+Transfinite Curve {9, 21, 10, 39, 40, 41} = nVAirfoil Using Progression 1.01;
 //+
 Transfinite Curve {42, 43, 44, 45} = nVAirfoil Using Progression 1;
 //+
-Transfinite Curve {25, 29} = 50 Using Progression 1.04;
-Transfinite Curve {30} = 50 Using Progression 1.06;
-Transfinite Curve {19, 14} = 50 Using Progression 1.045;
+Transfinite Curve {19, 14, 30, 25, 29} = 152 Using Progression 1.015;
 //+
-Transfinite Curve {20, 15, 32, 26, 55} = 50 Using Progression 1.037;
+Transfinite Curve {20, 15, 32, 26, 55} = 342 Using Progression 1;
 //+
-Transfinite Curve {37, 38} = 50 Using Progression 1.077;
-Transfinite Curve {56} = 50 Using Progression 1.11;
+Transfinite Curve {37, 38, 56} = 200 Using Progression 1.02;
 //+
-Transfinite Curve {36} = 50 Using Progression 1.045;
+Transfinite Curve {36} = 200 Using Progression 1.01;
 //+
-Transfinite Curve {46} = 50 Using Progression 1.09;
+Transfinite Curve {46} = 200 Using Progression 1.01;
 //+
-Transfinite Curve {4, 2} = nVLE Using Progression 1;
-Transfinite Curve {35} = nVLE Using Progression 1.04;
+Transfinite Curve {35, 4, 2} = nVLE Using Progression 1;
 //+
 Transfinite Curve {34} = nVLE Using Progression prVLEBottom;
 //+
 Transfinite Curve {7, 5} = nVLE Using Progression 1/prVLEBottom;
 //+
-Transfinite Curve {48} = 30 Using Progression 1.01;
-Transfinite Curve {49} = 30 Using Progression 1.15;
-Transfinite Curve {50, 51} = 30 Using Progression 1;
-Transfinite Curve {47} = 30 Using Progression 1.06;
-Transfinite Curve {33} = 30 Using Progression 1.15;
+Transfinite Curve {33, 47, 48, 49, 50, 51} = 164 Using Progression 1.005;
 
 Transfinite Surface "*";
 //+
