@@ -107,11 +107,12 @@ if __name__ == "__main__":
     #path = r'/Users/zeemarquez/openfoam/assignment/freestream/grid2/postProcessing/airfoil_t3800.csv'
     #path_ex = r'/Users/zeemarquez/openfoam/assignment/data/Exp_ref_Cp_free.dat'
     
-    logpath = r'/Users/zeemarquez/openfoam/assignment/freestream/grid1/case/log.csv'
+    logpath = r'/Users/zeemarquez/openfoam/assignment/groundeffect/case/old/log.csv'
     df = pd.read_csv(logpath, delimiter=';')
     
-    df_ = rebuffer(df,'omega',100,5000,0.2)
-    df_ = rebuffer(df_,'Uy',1000,10000,0.2)
-    df_ = rebuffer(df_,'Ux',1000,16000,0.2)
+    df_ = rebuffer(df,'p',200,1050,0.2)
+    df_ = rebuffer(df_,'e',5,1400,0.1)
+    df_ = rebuffer(df_,'Uy',5,1400,0.1)
+    df_ = rebuffer(df_,'Ux',5,1400,0.1)
     
-    plotlogdf(df_, savename='freestream_grid1')
+    plotlogdf(df_, savename='groundeffect')
