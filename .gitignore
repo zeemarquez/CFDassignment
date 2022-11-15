@@ -8,6 +8,7 @@ remote: error: File groundeffect/mesh_refine.msh is 183.19 MB; t
 
 .DS_Store
 
+/groundeffect/postProcessing
 /groundeffect/case_m
 /groundeffect/case/*
 
@@ -21,7 +22,7 @@ remote: error: File groundeffect/mesh_refine.msh is 183.19 MB; t
 !/groundeffect/case/residuals.png
 !/groundeffect/case/mesh.geo
 
-
+/freestream/grid2/postProcessing
 /freestream/grid2/case/*
 
 !/freestream/grid2/case/0
@@ -29,11 +30,10 @@ remote: error: File groundeffect/mesh_refine.msh is 183.19 MB; t
 !/freestream/grid2/case/system
 !/freestream/grid2/case/a.foam
 !/freestream/grid2/case/forces.csv
-!/freestream/grid2/case/forces.png
 !/freestream/grid2/case/residuals.csv
-!/freestream/grid2/case/residuals.png
 !/freestream/grid2/case/mesh.geo
 
+/freestream/grid1/postProcessing
 /freestream/grid1/case/*
 
 !/freestream/grid1/case/0
@@ -41,7 +41,5 @@ remote: error: File groundeffect/mesh_refine.msh is 183.19 MB; t
 !/freestream/grid1/case/system
 !/freestream/grid1/case/a.foam
 !/freestream/grid1/case/forces.csv
-!/freestream/grid1/case/forces.png
 !/freestream/grid1/case/residuals.csv
-!/freestream/grid1/case/residuals.png
 !/freestream/grid1/case/mesh.geo

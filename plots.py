@@ -4,6 +4,36 @@ import pandas as pd
 import numpy as np
 import random as rd
 
+def plotvarDf(df_var, var, name):
+    
+    df = df_var.copy()
+
+    p0 = 1.005357351
+    df['cp'] = df.apply(lambda x: (x['p'] - 1)/(p0 - 1), axis=1)
+
+    df_upper = df[df['Normals_1'] < 0.0].sort_values(by = ['Points_0'])
+    df_lower = df[df['Normals_1'] > 0.0].sort_values(by = ['Points_0'])
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+
+    ax.plot(df_lower['Points_0'], df_lower[var], label = 'lower', linestyle='dashed', linewidth=1, color='black')
+    ax.plot(df_upper['Points_0'], df_upper[var], label = 'upper', linestyle='dotted', linewidth=1, color='black')
+    
+    #plt.yscale('log')
+    ax.grid(which='major', color='#DDDDDD', linewidth=0.8)
+    ax.grid(which='minor', color='#EEEEEE', linestyle=':', linewidth=0.5)
+    ax.minorticks_on()
+
+    plt.title(' ')
+    plt.legend(loc='upper right')
+    plt.xlabel('x/c')
+    plt.ylabel(var)
+    fig.set_size_inches(10, 6)
+    fig.tight_layout()
+    plt.savefig('pictures/'+var+'_'+name+'.png')
+    plt.show()
+
 def plotvar(path, path_ex, name, var):
 
     df = pd.read_csv(path)
@@ -107,6 +137,7 @@ if __name__ == "__main__":
     #path = r'/Users/zeemarquez/openfoam/assignment/freestream/grid2/postProcessing/airfoil_t3800.csv'
     #path_ex = r'/Users/zeemarquez/openfoam/assignment/data/Exp_ref_Cp_free.dat'
     
+    '''
     logpath = r'/Users/zeemarquez/openfoam/assignment/groundeffect/case/old/log.csv'
     df = pd.read_csv(logpath, delimiter=';')
     
@@ -116,3 +147,22 @@ if __name__ == "__main__":
     df_ = rebuffer(df_,'Ux',5,1400,0.1)
     
     plotlogdf(df_, savename='groundeffect')
+    '''
+    
+    grid1path = r'/Users/zeemarquez/openfoam/assignment/freestream/grid1/postProcessing/steady/airfoil_t600.csv'
+    grid2path = r'/Users/zeemarquez/openfoam/assignment/freestream/grid2/postProcessing/airfoil_t3800.csv'
+    
+    df_grid1 = pd.read_csv(grid1path)
+    df_grid2 = pd.read_csv(grid2path)
+    
+    plotvarDf(df_grid1, 'yPlus', 'grid1')
+    
+    yPlus = df_grid2['yPlus'].to_list()
+    yPlus_edit = []
+    for i,y in enumerate(yPlus):
+        yPlus_edit.append(y/2.5)
+        
+    df_grid2_edit = df_grid2.copy()
+    df_grid2_edit['yPlus'] = yPlus_edit
+    plotvarDf(df_grid2_edit, 'yPlus', 'grid2')
+#%%
